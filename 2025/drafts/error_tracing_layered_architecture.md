@@ -16,8 +16,11 @@ This talk tells the story of how I tackled error propagation and tracing in a la
 # Talk Description
 
 1 - The Situation / Context:
+![alt text](image.png)
 
-I won’t spend time ranting about what a layered architecture is, why it’s popular, or the advantages it offers. Instead, this talk will focus on a specific challenge we encountered: escalating errors efficiently and reliably in a layered architecture and a framework i developed to solve this specific problem.
+[Reference Link](https://www.oreilly.com/library/view/software-architecture-patterns/9781491971437/ch01.html)
+
+I won’t spend time ranting about what a layered architecture is, why it’s popular, or the advantages it offers other than to highlight that layered Architecture concepts follows a pattern of having basically 3 layers, Presentation layer, Buisness layer and Persistent layer. Instead, this talk will focus on a specific challenge we encountered working with escalating contextual error messages from the bottom up and a framework that I introduced as the tech lead at the time into our team.
 
 We’re all familiar with the well-renowned pattern:
 
