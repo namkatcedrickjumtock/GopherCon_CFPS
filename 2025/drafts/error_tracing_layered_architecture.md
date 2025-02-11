@@ -11,12 +11,17 @@
 ### Abstract:
 Error handling in Go is designed to be simple, explicit, and flexible. But when applied to a layered architecture, this simplicity can lead to chaos: verbose error messages, lost context, and debugging headaches that leave developers scrambling for solutions. In our journey, we struggled to trace errors through service, repository, and API layers, often ending up with cryptic logs and unclear root causes.
 
+## Go errors are just values
+
+Go has a straightforward way to handle errors: errors are just values. An error is just a value that implements the error interface with a single method Error() string. Instead of throwing an exception and disrupting the current execution flow, Go functions return an error value alongside other results. The caller can then decide how to handle it: check its value to make decision, wrap with new messages and context, or simply return the error, leaving the handling logic for parent callers.
+
+
 This talk tells the story of how I tackled error propagation and tracing in a layered architecture. From the initial frustration of Go’s “errors as values” philosophy to experimenting with structured solutions, we uncovered patterns and tools that transformed our approach.
 
 # Talk Description
 
 1 - The Situation / Context:
-![alt text](image.png)
+![layered Architecture diagram](layered_architecture.png)
 
 [Reference Link](https://www.oreilly.com/library/view/software-architecture-patterns/9781491971437/ch01.html)
 
