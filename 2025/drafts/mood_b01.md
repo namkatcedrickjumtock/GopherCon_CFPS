@@ -13,9 +13,9 @@ Without going into much detail about the product we were building unless this be
 Business Logic
 <!-- Generic SSA NOTOK -->
 ```
-/internal/services/users.go 
+/internal/buisness/layer/users.go 
     |
-    --> CreateRandomUserOrder(orderArgs)(*randomOrderResponse, error){
+    |---> CreateRandomUserOrder(orderArgs)(*randomOrderResponse, error){
         orderResponse, error = persistence.CreateUserOrder(orderArgs)
         if err != nil{
             return nil, err
@@ -35,10 +35,59 @@ Take for example the above code when the caller calls this method via it's handl
 
 The question we're try to address here is how do we excalate contextual error messages up our architecture stack without much verbosity overhead?
 
-## 1. Starting small:
+## 1. Starting small, building up:
+After facing increasing
 
-From the use case 01 above adding more information on the returned error using the `fmt.Errorf(``)` would make life much easier right? sure adding more information on the returned error would provide some detail exactly on which part of the application/method the error message was coming from
+Exporting error variables
 
+Each package in our codebase defined its own error variables, often with inconsistent styles.
+```
+package database
 
-- I created a standardized error table ( like a DNS routing table borrowing inspiration from the http status codes).
+var ErrNotFound = errors.NewValue("record not found")
+var ErrMultipleFound = errors.NewValue("multiple records found")
+var ErrTimeout = errors.NewValue("request timeout")
+```
+```
+package profile
+
+var ErrUserNotFound = errors.NewValue("user not found")
+var ErrBusinessNotFound = errors.NewValue("business not found")
+var ErrContextCancel = errors.NewValue("context canceled")
+Checking errors with errors.Is() and wrapping with additional context
+res, err := repo.QueryUser(ctx, req)
+switch {
+    case err == nil:
+        // continue
+    case errors.Is(database.NotFound):
+        return nil, errors.Wrapf(ErrUserNotFound, "user not found (id=%v)", req.UserID)
+    default:
+        return nil, errors.Wrapf(ctx, "failed to query user (id=%v)", req.UserID)
+}
+```
+This helped propagate errors with more detail but often resulted in verbosity, duplication, and less clarity in logs:
+internal server error: failed to query user: user not found (id=52a0a433-3922-48bd-a7ac-35dd8972dfe5): record not found: not found
+
+```
+/internal/buisness/layer/users.go 
+    |
+    |---> CreateRandomUserOrder(orderArgs)(*randomOrderResponse, error){
+        orderResponse, error = persistence.CreateUserOrder(orderArgs)
+        if err != nil{
+            return nil, err
+        }
+
+        pymntResponse, err = payments.initiatePayments(orderResponse)
+        if err != nil{
+            return nil, err
+        }
+        return orderResponse, nil
+    }
+```
+
+From the use case 01 above adding more information on the returned error using the `fmt.Errorf(``)` would make life much easier right? sure adding more information on the returned error would provide some detail exactly on which part of the application/method the error message was coming from.
+
+- I created a standardized error reference table ( like a DNS routing table borrowing inspiration from the http status codes).
 - all error messages are wired up and excalated from the buisness layer.
+
+![error_msg_img](error_msg_img.png)
